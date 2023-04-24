@@ -50,7 +50,10 @@ USER = 'your_name'
 DOMAIN = 'NT_domain'
 FROMADDR = 'your_name@your_company.com'
 SMTPSVR_ADDR = 'smtp_server.your_company.com'
-toaddrs = sys.argv[2]  # git sendmail call this with arugments -i xxx@who.com
+
+# git sendmail call this with arugments -i xxx@who.com yyy.who2.com ...
+# (the list includes To: and Cc:)
+toaddrs = sys.argv[2:]
 
 msgs = sys.stdin.readlines()
 msg = ''.join(msgs)
@@ -59,7 +62,7 @@ msg = ''.join(msgs)
 #EXCHANGE_PASSWORD = 'ThisIsReallyMyPassword!'
 EXCHANGE_PASSWORD = getpass('Password for ' + USER + ': ')
 
-print("To: " + toaddrs)
+print("To: " + ' '.join(toaddrs))
 print("Message length is", len(msg))
 
 conn = SMTP(SMTPSVR_ADDR)
