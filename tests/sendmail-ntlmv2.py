@@ -11,7 +11,7 @@
 #   2. use alias
 #      edit ~/.gitconfig
 #      add below to section [alias]
-#         send-email-ntlm =  send-email --smtp-server /usr/bin/sendmail-htmlv2.py
+#         send-email-ntlm =  send-email --smtp-server /usr/bin/sendmail-ntlmv2.py
 #      Then, use below command like git send-email
 #      git send-email-ntlm
 #
