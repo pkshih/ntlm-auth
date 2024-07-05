@@ -24,6 +24,7 @@ import socket
 from smtplib import SMTPException, SMTPAuthenticationError
 import sys
 from getpass import getpass
+from email.mime.text import MIMEText
 
 workstation = socket.gethostname().upper()
 
@@ -56,20 +57,49 @@ SMTPSVR_ADDR = 'smtp_server.your_company.com'
 toaddrs = sys.argv[2:]
 
 msgs = sys.stdin.readlines()
-msg = ''.join(msgs)
+
+# split inputs into hdr and msg parts
+hdr_region = 1
+hdr = ''
+msg = ''
+
+for m in msgs:
+    if hdr_region == 1 and m == "\n":
+        hdr_region = 0
+    elif hdr_region == 1:
+        hdr = hdr + m
+    else:
+        msg = msg + m
+
+#msg = ''.join(msgs)
 #msg = 'hello world!'
+
+msg_utf8 = MIMEText(msg, "plain", "utf-8").as_string()
+msg = "\n" + msg  # only plain text need to re-add missing blank line
+
+#print("hdr:\n" + hdr)
+#print("msg:\n" + msg)
+#print("msg_utf8:\n" + msg_utf8)
+#print("hdr + msg:\n" + hdr + msg)
+#print("hdr + msg_utf8:\n" + hdr + msg_utf8)
 
 #EXCHANGE_PASSWORD = 'ThisIsReallyMyPassword!'
 EXCHANGE_PASSWORD = getpass('Password for ' + USER + ': ')
 
 print("To: " + ' '.join(toaddrs))
-print("Message length is", len(msg))
 
 conn = SMTP(SMTPSVR_ADDR)
 conn.set_debuglevel(0)
 conn.starttls()
 conn.ehlo()
 ntlm_authenticate(conn, DOMAIN, USER, EXCHANGE_PASSWORD)
-conn.sendmail(FROMADDR, toaddrs, msg)
+try:
+    print("Send message in plain text with length", len(msg), end='')
+    conn.sendmail(FROMADDR, toaddrs, hdr + msg)
+    print("")
+except UnicodeEncodeError:
+    print(" ... ascii coding failed")
+    print("Send message in utf8 text with length", len(msg_utf8))
+    conn.sendmail(FROMADDR, toaddrs, hdr + msg_utf8)
 conn.quit()
 
