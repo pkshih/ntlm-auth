@@ -52,6 +52,8 @@ DOMAIN = 'NT_domain'
 FROMADDR = 'your_name@your_company.com'
 SMTPSVR_ADDR = 'smtp_server.your_company.com'
 
+SMTPAUTH_NONE = 0  # set to 1, if you want simple SMTP instead
+
 # git sendmail call this with arugments -i xxx@who.com yyy.who2.com ...
 # (the list includes To: and Cc:)
 toaddrs = sys.argv[2:]
@@ -83,8 +85,9 @@ msg = "\n" + msg  # only plain text need to re-add missing blank line
 #print("hdr + msg:\n" + hdr + msg)
 #print("hdr + msg_utf8:\n" + hdr + msg_utf8)
 
-#EXCHANGE_PASSWORD = 'ThisIsReallyMyPassword!'
-EXCHANGE_PASSWORD = getpass('Password for ' + USER + ': ')
+if SMTPAUTH_NONE != 1:
+    #EXCHANGE_PASSWORD = 'ThisIsReallyMyPassword!'
+    EXCHANGE_PASSWORD = getpass('Password for ' + USER + ': ')
 
 print("To: " + ' '.join(toaddrs))
 
@@ -92,7 +95,10 @@ conn = SMTP(SMTPSVR_ADDR)
 conn.set_debuglevel(0)
 conn.starttls()
 conn.ehlo()
-ntlm_authenticate(conn, DOMAIN, USER, EXCHANGE_PASSWORD)
+
+if SMTPAUTH_NONE != 1:
+    ntlm_authenticate(conn, DOMAIN, USER, EXCHANGE_PASSWORD)
+
 try:
     print("Send message in plain text with length", len(msg), end='')
     conn.sendmail(FROMADDR, toaddrs, hdr + msg)
